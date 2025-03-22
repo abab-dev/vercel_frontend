@@ -96,7 +96,6 @@ export class Game extends Phaser.Scene {
         //     if (this.physics.world.debugGraphic) {
         //         this.physics.world.debugGraphic.clear();
         //     }
-        //     this.physics.world.createDebugGraphic();
         // }
         // const debugGraphics = this.add.graphics().setAlpha(0.75);
 
