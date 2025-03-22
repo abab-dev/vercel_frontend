@@ -6,7 +6,7 @@ import './character/MyPlayer.ts'
 import './character/OtherPlayer.ts'
 import MyPlayer from './character/MyPlayer.ts';
 import OtherPlayer from './character/OtherPlayer.ts';
-const PROXIMITY_THRESHOLD = 300;
+const PROXIMITY_THRESHOLD = 200;
 
 
 export class Game extends Phaser.Scene {
@@ -92,12 +92,12 @@ export class Game extends Phaser.Scene {
                 this.physics.add.collider(this.myPlayer, collider);
             }
         });
-        if (process.env.NODE_ENV !== 'production') {
-            if (this.physics.world.debugGraphic) {
-                this.physics.world.debugGraphic.clear();
-            }
-            this.physics.world.createDebugGraphic();
-        }
+        // if (process.env.NODE_ENV !== 'production') {
+        //     if (this.physics.world.debugGraphic) {
+        //         this.physics.world.debugGraphic.clear();
+        //     }
+        //     this.physics.world.createDebugGraphic();
+        // }
         // const debugGraphics = this.add.graphics().setAlpha(0.75);
 
         // Set camera and player physics properties
