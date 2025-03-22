@@ -62,7 +62,7 @@ export default class Network {
       this.webRTC?.deleteVideoStream(key)
     })
     this.room.onMessage(Message.READY_TO_CONNECT,(clientId)=>{
-      this.webRTC?.connectToNewUser(clientId)
+      this.webRTC?.connectToUser(clientId)
     })
   }
 
