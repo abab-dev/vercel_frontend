@@ -6,6 +6,7 @@ import './character/MyPlayer.ts'
 import './character/OtherPlayer.ts'
 import MyPlayer from './character/MyPlayer.ts';
 import OtherPlayer from './character/OtherPlayer.ts';
+const PROXIMITY_THRESHOLD = 300;
 
 
 export class Game extends Phaser.Scene {
@@ -104,8 +105,6 @@ export class Game extends Phaser.Scene {
         this.network.onPlayerJoined(this.handlePlayerJoined, this)
         this.network.onPlayerLeft(this.handlePlayerLeft, this)
         this.network.onPlayerUpdated(this.handlePlayerUpdated, this)
-        // Debugging
-        
     }
 
     private handlePlayerJoined(newPlayer: IPlayer, id: string) {
@@ -128,9 +127,25 @@ export class Game extends Phaser.Scene {
             if (!otherPlayer) return
             otherPlayer.updateOtherPlayer(field, value)
         }
-        update() {
-            if (this.myPlayer) {
-              this.myPlayer.update( this.cursors,this.network )
+
+    update() {
+        if (!this.myPlayer || !this.network) return;
+
+        this.myPlayer.update(this.cursors, this.network);
+
+        this.otherPlayerMap.forEach((otherPlayer, id) => {
+            const distance = Phaser.Math.Distance.Between(
+                this.myPlayer.x,
+                this.myPlayer.y,
+                otherPlayer.x,
+                otherPlayer.y
+            );
+
+            if (distance <= PROXIMITY_THRESHOLD) {
+                this.network?.webRTC?.connectToUser(id);
+            } else {
+                this.network?.webRTC?.disconnectFromUser(id);
             }
-          }
+        });
+    }
 }

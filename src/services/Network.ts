@@ -13,7 +13,7 @@ export default class Network {
   private client: Client
   private room?: Room<IOfficeState>
   private events= new Phaser.Events.EventEmitter()
-  private webRTC?:WebRTC
+  webRTC?:WebRTC
 
 
   mySessionId!:string
