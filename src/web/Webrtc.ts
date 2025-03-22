@@ -75,19 +75,6 @@ export default class WebRTC {
             this.peers.delete(userId);
         }
     }
-    connectToNewUser(userId: string) {
-        if (!this.myStream) return
-        const call = this.myPeer.call(userId, this.myStream)
-        const video = document.createElement('video')
-        call.on('stream', (userVideoStream) => {
-          this.addVideoStream(video, userVideoStream)
-        })
-        call.on('close', () => {
-          video.remove()
-        })
-    
-        this.peers.set(userId,call)
-      }
     setUpButtons() {
         const audioButton = document.createElement('button')
         audioButton.innerText = 'Mute'

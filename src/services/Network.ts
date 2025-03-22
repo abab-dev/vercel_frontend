@@ -45,10 +45,8 @@ export default class Network {
     
       console.log(`Player joined: ${key}`);
       this.events.emit(Event.PLAYER_JOINED, player, key);
-      if (this.webRTC) this.webRTC.connectToNewUser(key)
-    
+      if (this.webRTC) this.webRTC.connectToUser(key)
       const propertiesToListen = ['x', 'y', 'anim'];
-    
       propertiesToListen.forEach((property) => {
         player.listen(property, (value, previousValue) => {
           this.events.emit(Event.PLAYER_UPDATED, property, value, key);
@@ -69,7 +67,6 @@ export default class Network {
   }
 
   onPlayerJoined(callback: (Player: IPlayer, key: string) => void, context?: any) {
-    console.log('inside on player jjoined callback')
     this.events.on(Event.PLAYER_JOINED,callback, context)
   }
   onPlayerUpdated(
