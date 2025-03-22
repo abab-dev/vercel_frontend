@@ -22,7 +22,12 @@ export default class Network {
 
   constructor() {
     // const endpoint = 'ws://localhost:2567'
-    const endpoint = 'wss://render-server-h04y.onrender.com'
+    const protocol = window.location.protocol.replace('http', 'ws')
+    // const endpoint = 'wss://render-server-h04y.onrender.com'
+    const endpoint =
+      process.env.NODE_ENV === 'production'
+        ? 'wss://render-server-h04y.onrender.com'
+        : `${protocol}//${window.location.hostname}:2567`
     this.client = new Client(endpoint)
   }
 

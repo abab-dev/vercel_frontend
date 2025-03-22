@@ -21,25 +21,30 @@ export class Game extends Phaser.Scene {
     init (){
         this.network = new Network()
     }
+    preload(){
 
-    preload() {
-
-        // Load the tilemap and image assets
-        this.load.tilemapTiledJSON('map', 'assets/json/final_map.json');
-        this.load.image('floor', 'assets/tiles/floor.png');
-        this.load.image('forest', 'assets/tiles/forest.png');
-        this.load.image('office', 'assets/tiles/office.png');
-        this.load.image('objects', 'assets/tiles/objects.png');
-        this.load.image('scifi', 'assets/tiles/scifi.png');
-        this.load.atlas('player', 'assets/tiles/chr.png', 'assets/json/char.json');
-        this.cursors = this.input.keyboard.createCursorKeys();
+    this.cursors = this.input.keyboard.createCursorKeys()
     }
 
+    // preload() {
+    //
+    //     // Load the tilemap and image assets
+    //     this.load.tilemapTiledJSON('map', 'assets/json/final_map.json');
+    //     this.load.image('floor', 'assets/tiles/floor.png');
+    //     this.load.image('forest', 'assets/tiles/forest.png');
+    //     this.load.image('office', 'assets/tiles/office.png');
+    //     this.load.image('objects', 'assets/tiles/objects.png');
+    //     this.load.image('scifi', 'assets/tiles/scifi.png');
+    //     this.load.atlas('player', 'assets/tiles/chr.png', 'assets/json/char.json');
+    //     this.cursors = this.input.keyboard.createCursorKeys();
+    // }
+    //
     async create() {
         if(!this.network){
             throw new Error('server instance missing')
         }
         await this.network.join()
+        this.scene.stop('preloader')
         createCharacterAnims(this.anims)
         console.log(this.anims)
         const map = this.make.tilemap({ key: 'map' });
@@ -59,7 +64,7 @@ export class Game extends Phaser.Scene {
         const superposeLayer = map.createLayer('superpose', [tileset4, tileset5], 0, 0);
 
         // Set camera and physics bounds based on the map size
-        this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+        // this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
         // Optional: Set a background color for debugging
@@ -86,8 +91,12 @@ export class Game extends Phaser.Scene {
                 this.physics.add.collider(this.myPlayer, collider);
             }
         });
-        this.physics.world.debugGraphic.clear();
-        this.physics.world.createDebugGraphic();
+        if (process.env.NODE_ENV !== 'production') {
+            if (this.physics.world.debugGraphic) {
+                this.physics.world.debugGraphic.clear();
+            }
+            this.physics.world.createDebugGraphic();
+        }
         // const debugGraphics = this.add.graphics().setAlpha(0.75);
 
         // Set camera and player physics properties
