@@ -9,9 +9,9 @@ export default class WebRTC {
     private myStream?: MediaStream
 
     constructor(userId: string, network: Network) {
-        console.log(this.videoGrid)
-        console.log(this.buttonGrid)
-        console.log(this.myVideo)
+        // console.log(this.videoGrid)
+        // console.log(this.buttonGrid)
+        // console.log(this.myVideo)
         this.myPeer = new Peer(userId)
         this.myVideo.muted = true
         navigator.mediaDevices.getUserMedia({

@@ -39,11 +39,11 @@ export default class Network {
     // this.room.state.players.onChange = (player, key) => {
     //   console.log(player, 'have changes at', key)
     // }
-    console.log(this.room.state)
+    // console.log(this.room.state)
     this.room.state.players.onAdd((player: IPlayer, key: string) => {
       if (key === this.mySessionId) return;
     
-      console.log(`Player joined: ${key}`);
+      // console.log(`Player joined: ${key}`);
       this.events.emit(Event.PLAYER_JOINED, player, key);
       if (this.webRTC) this.webRTC.connectToUser(key)
       const propertiesToListen = ['x', 'y', 'anim'];
@@ -57,7 +57,7 @@ export default class Network {
     
 
     this.room.state.players.onRemove ( (player: IPlayer, key: string) => {
-      console.log(`player removed ${player}`)
+      // console.log(`player removed ${player}`)
       this.events.emit(Event.PLAYER_LEFT,key)
       this.webRTC?.deleteVideoStream(key)
     })
@@ -73,12 +73,12 @@ export default class Network {
     callback: (field: string, value: number | string, key: string) => void,
     context?: any
   ) {
-    console.log('inside on player updated callback')
+    // console.log('inside on player updated callback')
     this.events.on(Event.PLAYER_UPDATED, callback, context)
   }
 
   onPlayerLeft(callback: (key: string) => void, context?: any) {
-    console.log('inside on player left callbacak')
+    // console.log('inside on player left callbacak')
     this.events.on(Event.PLAYER_LEFT,callback, context)
   }
   updatePlayer(currentX: number, currentY: number, currentAnim: string) {

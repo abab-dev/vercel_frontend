@@ -47,7 +47,7 @@ export class Game extends Phaser.Scene {
         await this.network.join()
         this.scene.stop('preloader')
         createCharacterAnims(this.anims)
-        console.log(this.anims)
+        // console.log(this.anims)
         const map = this.make.tilemap({ key: 'map' });
 
 
