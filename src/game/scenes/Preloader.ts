@@ -37,7 +37,7 @@ export default class Preloader extends Phaser.Scene {
       .text(
         screenCenterX,
         screenCenterY + 40,
-        'Please patiently wait for 10-15 seconds because it takes some time to wake the server up.'
+        'Servers take upto 1 minute to start'
       )
       .setOrigin(0.5)
       .setFontSize(18)
@@ -46,7 +46,7 @@ export default class Preloader extends Phaser.Scene {
       .text(
         screenCenterX,
         screenCenterY + 60,
-        "(Our server goes to sleep if the web doesn't receive any traffice in 1 hour)"
+        "(It is free instance please wait)"
       )
       .setOrigin(0.5)
       .setFontSize(18)
