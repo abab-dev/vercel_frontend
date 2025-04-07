@@ -1,0 +1,2099 @@
+Directory Structure:
+-------------------
+/ 
+├── .git/
+├── src/
+│   ├── game/
+│   │   ├── animation/
+│   │   │   └── Animation.ts
+│   │   ├── character/
+│   │   │   ├── MyPlayer.ts
+│   │   │   ├── OtherPlayer.ts
+│   │   │   └── Player.ts
+│   │   ├── scenes/
+│   │   │   ├── MainMenu.ts
+│   │   │   └── Preloader.ts
+│   │   ├── EventBus.ts
+│   │   ├── Game.ts
+│   │   ├── main.ts
+│   │   └── PhaserGame.tsx
+│   ├── services/
+│   │   └── Network.ts
+│   ├── types/
+│   │   ├── IOfficeState.ts
+│   │   └── Messages.ts
+│   ├── web/
+│   │   └── Webrtc.ts
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── vite-env.d.ts
+├── vite/
+│   ├── config.dev.mjs
+│   └── config.prod.mjs
+├── index.html
+├── LICENSE
+├── out.txt
+├── phaser.md
+├── README.md
+├── screenshot.png
+└── tsconfig.node.json
+
+File Contents:
+--------------
+File: ./LICENSE
+--------------------------------------------------
+Content of ./LICENSE:
+MIT License
+
+Copyright (c) 2024 Phaser Studio Inc
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+File: ./README.md
+--------------------------------------------------
+Content of ./README.md:
+# Phaser React TypeScript Template
+
+This is a Phaser 3 project template that uses the React framework and Vite for bundling. It includes a bridge for React to Phaser game communication, hot-reloading for quick development workflow and scripts to generate production-ready builds.
+
+**[This Template is also available as a JavaScript version.](https://github.com/phaserjs/template-react)**
+
+### Versions
+
+This template has been updated for:
+
+- [Phaser 3.87.0](https://github.com/phaserjs/phaser)
+- [React 18.2.0](https://github.com/facebook/react)
+- [Vite 5.3.1](https://github.com/vitejs/vite)
+- [TypeScript 5.2.2](https://github.com/microsoft/TypeScript)
+
+![screenshot](screenshot.png)
+
+## Requirements
+
+[Node.js](https://nodejs.org) is required to install dependencies and run scripts via `npm`.
+
+## Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm install` | Install project dependencies |
+| `npm run dev` | Launch a development web server |
+| `npm run build` | Create a production build in the `dist` folder |
+| `npm run dev-nolog` | Launch a development web server without sending anonymous data (see "About log.js" below) |
+| `npm run build-nolog` | Create a production build in the `dist` folder without sending anonymous data (see "About log.js" below) |
+
+## Writing Code
+
+After cloning the repo, run `npm install` from your project directory. Then, you can start the local development server by running `npm run dev`.
+
+The local development server runs on `http://localhost:8080` by default. Please see the Vite documentation if you wish to change this, or add SSL support.
+
+Once the server is running you can edit any of the files in the `src` folder. Vite will automatically recompile your code and then reload the browser.
+
+## Template Project Structure
+
+We have provided a default project structure to get you started. This is as follows:
+
+- `index.html` - A basic HTML page to contain the game.
+- `src` - Contains the React client source code.
+- `src/main.tsx` - The main **React** entry point. This bootstraps the React application.
+- `src/vite-env.d.ts` - Global TypeScript declarations, provide types information.
+- `src/App.tsx` - The main React component.
+- `src/game/PhaserGame.tsx` - The React component that initializes the Phaser Game and serve like a bridge between React and Phaser.
+- `src/game/EventBus.ts` - A simple event bus to communicate between React and Phaser.
+- `src/game` - Contains the game source code.
+- `src/game/main.tsx` - The main **game** entry point. This contains the game configuration and start the game.
+- `src/game/scenes/` - The Phaser Scenes are in this folder.
+- `public/style.css` - Some simple CSS rules to help with page layout.
+- `public/assets` - Contains the static assets used by the game.
+
+## React Bridge
+
+The `PhaserGame.tsx` component is the bridge between React and Phaser. It initializes the Phaser game and passes events between the two.
+
+To communicate between React and Phaser, you can use the **EventBus.js** file. This is a simple event bus that allows you to emit and listen for events from both React and Phaser.
+
+```js
+// In React
+import { EventBus } from './EventBus';
+
+// Emit an event
+EventBus.emit('event-name', data);
+
+// In Phaser
+// Listen for an event
+EventBus.on('event-name', (data) => {
+    // Do something with the data
+});
+```
+
+In addition to this, the `PhaserGame` component exposes the Phaser game instance along with the most recently active Phaser Scene using React forwardRef.
+
+Once exposed, you can access them like any regular react reference.
+
+## Phaser Scene Handling
+
+In Phaser, the Scene is the lifeblood of your game. It is where you sprites, game logic and all of the Phaser systems live. You can also have multiple scenes running at the same time. This template provides a way to obtain the current active scene from React.
+
+You can get the current Phaser Scene from the component event `"current-active-scene"`. In order to do this, you need to emit the event `"current-scene-ready"` from the Phaser Scene class. This event should be emitted when the scene is ready to be used. You can see this done in all of the Scenes in our template.
+
+**Important**: When you add a new Scene to your game, make sure you expose to React by emitting the `"current-scene-ready"` event via the `EventBus`, like this:
+
+
+```ts
+class MyScene extends Phaser.Scene
+{
+    constructor ()
+    {
+        super('MyScene');
+    }
+
+    create ()
+    {
+        // Your Game Objects and logic here
+
+        // At the end of create method:
+        EventBus.emit('current-scene-ready', this);
+    }
+}
+```
+
+You don't have to emit this event if you don't need to access the specific scene from React. Also, you don't have to emit it at the end of `create`, you can emit it at any point. For example, should your Scene be waiting for a network request or API call to complete, it could emit the event once that data is ready.
+
+### React Component Example
+
+Here's an example of how to access Phaser data for use in a React Component:
+
+```ts
+import { useRef } from 'react';
+import { IRefPhaserGame } from "./game/PhaserGame";
+
+// In a parent component
+const ReactComponent = () => {
+
+    const phaserRef = useRef<IRefPhaserGame>(); // you can access to this ref from phaserRef.current
+
+    const onCurrentActiveScene = (scene: Phaser.Scene) => {
+    
+        // This is invoked
+
+    }
+
+    return (
+        ...
+        <PhaserGame ref={phaserRef} currentActiveScene={onCurrentActiveScene} />
+        ...
+    );
+
+}
+```
+
+In the code above, you can get a reference to the current Phaser Game instance and the current Scene by creating a reference with `useRef()` and assign to PhaserGame component.
+
+From this state reference, the game instance is available via `phaserRef.current.game` and the most recently active Scene via `phaserRef.current.scene`.
+
+The `onCurrentActiveScene` callback will also be invoked whenever the the Phaser Scene changes, as long as you emit the event via the EventBus, as outlined above.
+
+## Handling Assets
+
+Vite supports loading assets via JavaScript module `import` statements.
+
+This template provides support for both embedding assets and also loading them from a static folder. To embed an asset, you can import it at the top of the JavaScript file you are using it in:
+
+```js
+import logoImg from './assets/logo.png'
+```
+
+To load static files such as audio files, videos, etc place them into the `public/assets` folder. Then you can use this path in the Loader calls within Phaser:
+
+```js
+preload ()
+{
+    //  This is an example of an imported bundled image.
+    //  Remember to import it at the top of this file
+    this.load.image('logo', logoImg);
+
+    //  This is an example of loading a static image
+    //  from the public/assets folder:
+    this.load.image('background', 'assets/bg.png');
+}
+```
+
+When you issue the `npm run build` command, all static assets are automatically copied to the `dist/assets` folder.
+
+## Deploying to Production
+
+After you run the `npm run build` command, your code will be built into a single bundle and saved to the `dist` folder, along with any other assets your project imported, or stored in the public assets folder.
+
+In order to deploy your game, you will need to upload *all* of the contents of the `dist` folder to a public facing web server.
+
+## Customizing the Template
+
+### Vite
+
+If you want to customize your build, such as adding plugin (i.e. for loading CSS or fonts), you can modify the `vite/config.*.mjs` file for cross-project changes, or you can modify and/or create new configuration files and target them in specific npm tasks inside of `package.json`. Please see the [Vite documentation](https://vitejs.dev/) for more information.
+
+## About log.js
+
+If you inspect our node scripts you will see there is a file called `log.js`. This file makes a single silent API call to a domain called `gryzor.co`. This domain is owned by Phaser Studio Inc. The domain name is a homage to one of our favorite retro games.
+
+We send the following 3 pieces of data to this API: The name of the template being used (vue, react, etc). If the build was 'dev' or 'prod' and finally the version of Phaser being used.
+
+At no point is any personal data collected or sent. We don't know about your project files, device, browser or anything else. Feel free to inspect the `log.js` file to confirm this.
+
+Why do we do this? Because being open source means we have no visible metrics about which of our templates are being used. We work hard to maintain a large and diverse set of templates for Phaser developers and this is our small anonymous way to determine if that work is actually paying off, or not. In short, it helps us ensure we're building the tools for you.
+
+However, if you don't want to send any data, you can use these commands instead:
+
+Dev:
+
+```bash
+npm run dev-nolog
+```
+
+Build:
+
+```bash
+npm run build-nolog
+```
+
+Or, to disable the log entirely, simply delete the file `log.js` and remove the call to it in the `scripts` section of `package.json`:
+
+Before:
+
+```json
+"scripts": {
+    "dev": "node log.js dev & dev-template-script",
+    "build": "node log.js build & build-template-script"
+},
+```
+
+After:
+
+```json
+"scripts": {
+    "dev": "dev-template-script",
+    "build": "build-template-script"
+},
+```
+
+Either of these will stop `log.js` from running. If you do decide to do this, please could you at least join our Discord and tell us which template you're using! Or send us a quick email. Either will be super-helpful, thank you.
+
+## Join the Phaser Community!
+
+We love to see what developers like you create with Phaser! It really motivates us to keep improving. So please join our community and show-off your work 😄
+
+**Visit:** The [Phaser website](https://phaser.io) and follow on [Phaser Twitter](https://twitter.com/phaser_)<br />
+**Play:** Some of the amazing games [#madewithphaser](https://twitter.com/search?q=%23madewithphaser&src=typed_query&f=live)<br />
+**Learn:** [API Docs](https://newdocs.phaser.io), [Support Forum](https://phaser.discourse.group/) and [StackOverflow](https://stackoverflow.com/questions/tagged/phaser-framework)<br />
+**Discord:** Join us on [Discord](https://discord.gg/phaser)<br />
+**Code:** 2000+ [Examples](https://labs.phaser.io)<br />
+**Read:** The [Phaser World](https://phaser.io/community/newsletter) Newsletter<br />
+
+Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, pixels and love.
+
+The Phaser logo and characters are &copy; 2011 - 2024 Phaser Studio Inc.
+
+All rights reserved.
+
+
+File: ./tsconfig.node.json
+--------------------------------------------------
+Content of ./tsconfig.node.json:
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "strict": true
+  },
+  "include": ["vite.config.ts"]
+}
+
+
+File: ./screenshot.png
+--------------------------------------------------
+Error reading file: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte. Content skipped.
+
+
+File: ./out.txt
+--------------------------------------------------
+Content of ./out.txt:
+Directory Structure:
+-------------------
+/ 
+├── .git/
+├── src/
+│   ├── game/
+│   │   ├── animation/
+│   │   │   └── Animation.ts
+│   │   ├── character/
+│   │   │   ├── MyPlayer.ts
+│   │   │   ├── OtherPlayer.ts
+│   │   │   └── Player.ts
+│   │   ├── scenes/
+│   │   │   ├── MainMenu.ts
+│   │   │   └── Preloader.ts
+│   │   ├── EventBus.ts
+│   │   ├── Game.ts
+│   │   ├── main.ts
+│   │   └── PhaserGame.tsx
+│   ├── services/
+│   │   └── Network.ts
+│   ├── types/
+│   │   ├── IOfficeState.ts
+│   │   └── Messages.ts
+│   ├── web/
+│   │   └── Webrtc.ts
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── vite-env.d.ts
+├── vite/
+│   ├── config.dev.mjs
+│   └── config.prod.mjs
+├── index.html
+├── LICENSE
+├── out.txt
+├── phaser.md
+├── README.md
+├── screenshot.png
+└── tsconfig.node.json
+
+File Contents:
+--------------
+File: ./LICENSE
+--------------------------------------------------
+Content of ./LICENSE:
+MIT License
+
+Copyright (c) 2024 Phaser Studio Inc
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+File: ./README.md
+--------------------------------------------------
+Content of ./README.md:
+# Phaser React TypeScript Template
+
+This is a Phaser 3 project template that uses the React framework and Vite for bundling. It includes a bridge for React to Phaser game communication, hot-reloading for quick development workflow and scripts to generate production-ready builds.
+
+**[This Template is also available as a JavaScript version.](https://github.com/phaserjs/template-react)**
+
+### Versions
+
+This template has been updated for:
+
+- [Phaser 3.87.0](https://github.com/phaserjs/phaser)
+- [React 18.2.0](https://github.com/facebook/react)
+- [Vite 5.3.1](https://github.com/vitejs/vite)
+- [TypeScript 5.2.2](https://github.com/microsoft/TypeScript)
+
+![screenshot](screenshot.png)
+
+## Requirements
+
+[Node.js](https://nodejs.org) is required to install dependencies and run scripts via `npm`.
+
+## Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm install` | Install project dependencies |
+| `npm run dev` | Launch a development web server |
+| `npm run build` | Create a production build in the `dist` folder |
+| `npm run dev-nolog` | Launch a development web server without sending anonymous data (see "About log.js" below) |
+| `npm run build-nolog` | Create a production build in the `dist` folder without sending anonymous data (see "About log.js" below) |
+
+## Writing Code
+
+After cloning the repo, run `npm install` from your project directory. Then, you can start the local development server by running `npm run dev`.
+
+The local development server runs on `http://localhost:8080` by default. Please see the Vite documentation if you wish to change this, or add SSL support.
+
+Once the server is running you can edit any of the files in the `src` folder. Vite will automatically recompile your code and then reload the browser.
+
+## Template Project Structure
+
+We have provided a default project structure to get you started. This is as follows:
+
+- `index.html` - A basic HTML page to contain the game.
+- `src` - Contains the React client source code.
+- `src/main.tsx` - The main **React** entry point. This bootstraps the React application.
+- `src/vite-env.d.ts` - Global TypeScript declarations, provide types information.
+- `src/App.tsx` - The main React component.
+- `src/game/PhaserGame.tsx` - The React component that initializes the Phaser Game and serve like a bridge between React and Phaser.
+- `src/game/EventBus.ts` - A simple event bus to communicate between React and Phaser.
+- `src/game` - Contains the game source code.
+- `src/game/main.tsx` - The main **game** entry point. This contains the game configuration and start the game.
+- `src/game/scenes/` - The Phaser Scenes are in this folder.
+- `public/style.css` - Some simple CSS rules to help with page layout.
+- `public/assets` - Contains the static assets used by the game.
+
+## React Bridge
+
+The `PhaserGame.tsx` component is the bridge between React and Phaser. It initializes the Phaser game and passes events between the two.
+
+To communicate between React and Phaser, you can use the **EventBus.js** file. This is a simple event bus that allows you to emit and listen for events from both React and Phaser.
+
+```js
+// In React
+import { EventBus } from './EventBus';
+
+// Emit an event
+EventBus.emit('event-name', data);
+
+// In Phaser
+// Listen for an event
+EventBus.on('event-name', (data) => {
+    // Do something with the data
+});
+```
+
+In addition to this, the `PhaserGame` component exposes the Phaser game instance along with the most recently active Phaser Scene using React forwardRef.
+
+Once exposed, you can access them like any regular react reference.
+
+## Phaser Scene Handling
+
+In Phaser, the Scene is the lifeblood of your game. It is where you sprites, game logic and all of the Phaser systems live. You can also have multiple scenes running at the same time. This template provides a way to obtain the current active scene from React.
+
+You can get the current Phaser Scene from the component event `"current-active-scene"`. In order to do this, you need to emit the event `"current-scene-ready"` from the Phaser Scene class. This event should be emitted when the scene is ready to be used. You can see this done in all of the Scenes in our template.
+
+**Important**: When you add a new Scene to your game, make sure you expose to React by emitting the `"current-scene-ready"` event via the `EventBus`, like this:
+
+
+```ts
+class MyScene extends Phaser.Scene
+{
+    constructor ()
+    {
+        super('MyScene');
+    }
+
+    create ()
+    {
+        // Your Game Objects and logic here
+
+        // At the end of create method:
+        EventBus.emit('current-scene-ready', this);
+    }
+}
+```
+
+You don't have to emit this event if you don't need to access the specific scene from React. Also, you don't have to emit it at the end of `create`, you can emit it at any point. For example, should your Scene be waiting for a network request or API call to complete, it could emit the event once that data is ready.
+
+### React Component Example
+
+Here's an example of how to access Phaser data for use in a React Component:
+
+```ts
+import { useRef } from 'react';
+import { IRefPhaserGame } from "./game/PhaserGame";
+
+// In a parent component
+const ReactComponent = () => {
+
+    const phaserRef = useRef<IRefPhaserGame>(); // you can access to this ref from phaserRef.current
+
+    const onCurrentActiveScene = (scene: Phaser.Scene) => {
+    
+        // This is invoked
+
+    }
+
+    return (
+        ...
+        <PhaserGame ref={phaserRef} currentActiveScene={onCurrentActiveScene} />
+        ...
+    );
+
+}
+```
+
+In the code above, you can get a reference to the current Phaser Game instance and the current Scene by creating a reference with `useRef()` and assign to PhaserGame component.
+
+From this state reference, the game instance is available via `phaserRef.current.game` and the most recently active Scene via `phaserRef.current.scene`.
+
+The `onCurrentActiveScene` callback will also be invoked whenever the the Phaser Scene changes, as long as you emit the event via the EventBus, as outlined above.
+
+## Handling Assets
+
+Vite supports loading assets via JavaScript module `import` statements.
+
+This template provides support for both embedding assets and also loading them from a static folder. To embed an asset, you can import it at the top of the JavaScript file you are using it in:
+
+```js
+import logoImg from './assets/logo.png'
+```
+
+To load static files such as audio files, videos, etc place them into the `public/assets` folder. Then you can use this path in the Loader calls within Phaser:
+
+```js
+preload ()
+{
+    //  This is an example of an imported bundled image.
+    //  Remember to import it at the top of this file
+    this.load.image('logo', logoImg);
+
+    //  This is an example of loading a static image
+    //  from the public/assets folder:
+    this.load.image('background', 'assets/bg.png');
+}
+```
+
+When you issue the `npm run build` command, all static assets are automatically copied to the `dist/assets` folder.
+
+## Deploying to Production
+
+After you run the `npm run build` command, your code will be built into a single bundle and saved to the `dist` folder, along with any other assets your project imported, or stored in the public assets folder.
+
+In order to deploy your game, you will need to upload *all* of the contents of the `dist` folder to a public facing web server.
+
+## Customizing the Template
+
+### Vite
+
+If you want to customize your build, such as adding plugin (i.e. for loading CSS or fonts), you can modify the `vite/config.*.mjs` file for cross-project changes, or you can modify and/or create new configuration files and target them in specific npm tasks inside of `package.json`. Please see the [Vite documentation](https://vitejs.dev/) for more information.
+
+## About log.js
+
+If you inspect our node scripts you will see there is a file called `log.js`. This file makes a single silent API call to a domain called `gryzor.co`. This domain is owned by Phaser Studio Inc. The domain name is a homage to one of our favorite retro games.
+
+We send the following 3 pieces of data to this API: The name of the template being used (vue, react, etc). If the build was 'dev' or 'prod' and finally the version of Phaser being used.
+
+At no point is any personal data collected or sent. We don't know about your project files, device, browser or anything else. Feel free to inspect the `log.js` file to confirm this.
+
+Why do we do this? Because being open source means we have no visible metrics about which of our templates are being used. We work hard to maintain a large and diverse set of templates for Phaser developers and this is our small anonymous way to determine if that work is actually paying off, or not. In short, it helps us ensure we're building the tools for you.
+
+However, if you don't want to send any data, you can use these commands instead:
+
+Dev:
+
+```bash
+npm run dev-nolog
+```
+
+Build:
+
+```bash
+npm run build-nolog
+```
+
+Or, to disable the log entirely, simply delete the file `log.js` and remove the call to it in the `scripts` section of `package.json`:
+
+Before:
+
+```json
+"scripts": {
+    "dev": "node log.js dev & dev-template-script",
+    "build": "node log.js build & build-template-script"
+},
+```
+
+After:
+
+```json
+"scripts": {
+    "dev": "dev-template-script",
+    "build": "build-template-script"
+},
+```
+
+Either of these will stop `log.js` from running. If you do decide to do this, please could you at least join our Discord and tell us which template you're using! Or send us a quick email. Either will be super-helpful, thank you.
+
+## Join the Phaser Community!
+
+We love to see what developers like you create with Phaser! It really motivates us to keep improving. So please join our community and show-off your work 😄
+
+**Visit:** The [Phaser website](https://phaser.io) and follow on [Phaser Twitter](https://twitter.com/phaser_)<br />
+**Play:** Some of the amazing games [#madewithphaser](https://twitter.com/search?q=%23madewithphaser&src=typed_query&f=live)<br />
+**Learn:** [API Docs](https://newdocs.phaser.io), [Support Forum](https://phaser.discourse.group/) and [StackOverflow](https://stackoverflow.com/questions/tagged/phaser-framework)<br />
+**Discord:** Join us on [Discord](https://discord.gg/phaser)<br />
+**Code:** 2000+ [Examples](https://labs.phaser.io)<br />
+**Read:** The [Phaser World](https://phaser.io/community/newsletter) Newsletter<br />
+
+Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, pixels and love.
+
+The Phaser logo and characters are &copy; 2011 - 2024 Phaser Studio Inc.
+
+All rights reserved.
+
+
+File: ./phaser.md
+--------------------------------------------------
+Content of ./phaser.md:
+
+*   `Phaser.Game`: The engine core, configuration, scene management.
+*   `Phaser.Scene`: The independent game world, manages game objects, input, physics, cameras, animations, etc.
+*   `GameObjectFactory` (`this.add`): Creates and *automatically adds* game objects to a scene.
+*   `GameObjectCreator` (`this.make`): Creates game objects *without* automatically adding them.
+
+**1. `Phaser.Game` - The Engine Core**
+
+*   **What it is:** The `Phaser.Game` object is the *top-level*, *entry point* for your entire game. Think of it as the *engine* itself. It initializes Phaser, sets up the game configuration, and manages the lifecycle of your scenes.
+
+*   **What it manages:**
+
+    *   **Configuration:**  You pass a configuration object to `Phaser.Game` when you create it, specifying things like:
+        *   Game width and height
+        *   Rendering backend (WebGL, Canvas)
+        *   Physics engine (Arcade, Matter.js, etc.)
+        *   Pixel Art vs. Anti-Aliasing
+        *   Initial scene to load
+
+    *   **Global Systems:**  The `Phaser.Game` instance creates and manages core systems that are used throughout your game:
+        *   Renderer
+        *   Clock/Timers
+        *   Device Information
+        *   Plugins
+
+    *   **Scenes:**  The `Phaser.Game` is responsible for managing the addition, removal, and switching of scenes.
+
+*   **Lifecycle Methods (Not directly overridden by you, but important to know):**
+
+    *   **`boot()`:** Initializes the engine.
+    *   **`step()`:** The main game loop. It updates all the systems, scenes, and renders the frame.
+    *   **`destroy()`:** Cleans up resources when the game is shut down.
+
+*   **Example:**
+
+    ```javascript
+    const config = {
+        type: Phaser.AUTO, // Uses WebGL if available, otherwise Canvas
+        width: 800,
+        height: 600,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 300 },
+                debug: false
+            }
+        },
+        scene: [BootScene, TitleScene, GameScene] // Array of Scenes
+    };
+
+    const game = new Phaser.Game(config);  // Creates the Phaser Game instance
+    ```
+
+**2. `Phaser.Scene` - The Game World Container**
+
+*   **What it is:**  A `Phaser.Scene` represents a *specific state* of your game.  Examples include: a loading screen, the main menu, a level, a pause screen, a game over screen, etc.  Each scene is independent and manages its own objects, logic, and resources.  Scenes are stacked up and managed internally using Phaser.
+
+*   **What it manages:**
+
+    *   **Game Objects:**  All the sprites, images, text, shapes, tilemaps, and other visible/interactive elements in that particular scene.
+    *   **Physics:** The physics world for that scene (if used).  You can have different physics settings in different scenes.
+    *   **Input:**  Keyboard, mouse, touch input specific to that scene.
+    *   **Cameras:** One or more cameras that control what part of the game world is visible.
+    *   **Animations:** Scene-specific animations, or access to global animations.
+    *   **Audio:** Scene-specific sounds and music, or access to global audio.
+    *   **Events:** Scene-specific events that trigger custom logic.
+    *   **Tilemaps**: Data and assets related to rendering tile-based games.
+    *   **Data:** Key/value pair data for scene related information.
+
+*   **Key Lifecycle Methods (Overridden by you):** These methods define the behavior of your scene.
+
+    *   **`preload()`:** *Loads assets* (images, sounds, JSON, etc.) that the scene will use.  Phaser uses a *queue* system, so assets are loaded asynchronously.
+    *   **`create()`:** *Creates and initializes* all the game objects, sets up physics, binds input, and performs other one-time setup tasks for the scene.  This is where you instantiate your sprites, text, etc.  and add them to the scene.
+    *   **`update(time, delta)`:** *Updates* the game world every frame.  This is where you handle user input, move objects, check for collisions, update animations, and perform other ongoing game logic.  `time` is the current game time, and `delta` is the time elapsed since the last frame (in milliseconds).
+    *   **`init(data)`:**  Called before `preload()`.  It can be used to receive data passed from a previous scene (e.g., the score from a previous level).
+    *   **`shutdown()`:** Called when the scene is stopped or switched away from.  It's used to clean up resources and unbind event listeners.
+    *   **`destroy()`:** Called when the scene is completely destroyed (removed from the game).  It's used for final cleanup and releasing resources.
+
+*   **Methods Attached to `this` Inside a Scene (Most important ones):**
+
+    *   **`this.load`: `Phaser.Loader.LoaderPlugin`** Loads assets using methods like `image()`, `audio()`, `tilemapTiledJSON()`, etc.
+    *   **`this.add`: `Phaser.GameObjects.GameObjectFactory`**  Creates and adds game objects to the scene. Methods include: `sprite()`, `image()`, `text()`, `tilemapLayer()`, etc.
+    *   **`this.make`: `Phaser.GameObjects.GameObjectCreator`** Creates game objects *without* automatically adding them to the scene.
+    *   **`this.physics`: `Phaser.Physics.Arcade.ArcadePhysics` (or Matter.js physics, etc.)**  The physics engine for the scene.
+    *   **`this.input`: `Phaser.Input.InputPlugin`** Handles input events.
+    *   **`this.cameras`: `Phaser.Cameras.SceneCameraManager`** Manages the cameras in the scene.
+    *   **`this.anims`: `Phaser.Animations.AnimationManager`** Manages animations.
+    *   **`this.sound`: `Phaser.Sound.WebAudioSoundManager` or `Phaser.Sound.HTML5AudioSoundManager`** Manages audio.
+    *   **`this.scene`: `Phaser.Scenes.ScenePlugin`** Manages scene transitions and scene management.  Methods like `start()`, `stop()`, `pause()`, `resume()`.
+    *   **`this.events`: `Phaser.Events.EventEmitter`** An event emitter for the scene. You can use it to create custom events and listen for them.
+    *    **`this.data`: `Phaser.Data.DataManager`** Store data locally per-scene.
+
+*   **Example:**
+
+    ```javascript
+    class GameScene extends Phaser.Scene {
+        constructor() {
+            super({ key: 'GameScene' });
+        }
+
+        preload() {
+            this.load.image('sky', 'assets/sky.png');
+            this.load.image('ground', 'assets/platform.png');
+            this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+        }
+
+        create() {
+            this.add.image(400, 300, 'sky');
+            const platforms = this.physics.add.staticGroup();
+            platforms.create(400, 568, 'ground').setScale(2).refreshBody();
+        }
+
+        update(time, delta) {
+            // Handle input, update game objects, etc.
+        }
+    }
+    ```
+
+**3. `GameObjectFactory` (`this.add` in a Scene)**
+
+*   **What it is:**  The `GameObjectFactory` is a *helper object* available through `this.add` inside a `Phaser.Scene`. Its purpose is to *simplify the creation and addition of game objects* to the scene.
+
+*   **What it does:**
+
+    *   **Creates Game Objects:** It provides methods to create instances of various game object types (sprites, images, text, shapes, tilemaps, etc.).
+    *   **Adds to Scene:**  Crucially, it *automatically adds* the created game object to the scene's display list and updates list.  This makes the object visible, interactive, and subject to physics (if applicable).
+
+*   **Key Methods:**
+
+    *   **`sprite(x, y, texture, frame)`:** Creates a `Phaser.GameObjects.Sprite`.
+    *   **`image(x, y, texture)`:** Creates a `Phaser.GameObjects.Image`.
+    *   **`text(x, y, text, style)`:** Creates a `Phaser.GameObjects.Text`.
+    *   **`tilemapLayer(x, y, tileset, mapData)`:** Creates a `Phaser.Tilemaps.TilemapLayer`
+    *   And many more for other game object types.
+
+*   **Example:**
+
+    ```javascript
+    create() {
+        // Creates a sprite and automatically adds it to the scene:
+        const player = this.add.sprite(100, 450, 'dude');
+        player.setBounce(0.2);
+        player.setCollideWorldBounds(true);
+
+        // Adds a static image
+        const background = this.add.image(400, 300, 'sky');
+    }
+    ```
+
+**4. `GameObjectCreator` (`this.make` in a Scene)**
+
+*   **What it is:**  The `GameObjectCreator` is another *helper object* available through `this.make` inside a `Phaser.Scene`.  Like `GameObjectFactory`, it's designed to simplify game object creation.  However, there's a *critical difference*.
+
+*   **What it does:**
+
+    *   **Creates Game Objects:** It provides the *same methods* as `GameObjectFactory` to create instances of various game object types.
+    *   **Does NOT Add to Scene:**  *This is the key difference.* `GameObjectCreator` *only creates* the game object. It does *not* automatically add it to the scene.
+
+*   **Why use it?**
+
+    *   **Delayed Addition:** You might want to create an object but add it to the scene later, based on some condition or event.
+    *   **Object Pooling:** You might be using an object pool (a common game development technique) to reuse game objects.  `GameObjectCreator` lets you create the objects upfront without adding them to the scene.
+    *   **Custom Logic:**  You might need to perform some custom initialization or manipulation of the object before adding it to the scene.
+
+*   **Example:**
+
+    ```javascript
+    create() {
+        // Create a sprite using GameObjectCreator, but DON'T add it yet.
+        const enemy = this.make.sprite({
+            x: 200,
+            y: 100,
+            key: 'enemy'
+        }, false);  // The 'false' argument is important!
+
+        // ... later, after some condition is met:
+        this.add.existing(enemy); // Now add it to the scene.
+    }
+    ```
+
+**5. The Other Managers**
+
+Phaser scenes create other manager to help manage different aspect of the game.
+
+*   **`this.physics`: `Phaser.Physics.Arcade.ArcadePhysics` (or Matter.js physics, etc.)**  This allows us to set up physics like collision and gravity
+
+*   **`this.input`: `Phaser.Input.InputPlugin`**  This listens for keyboard, mouse and other forms of controls
+
+*   **`this.cameras`: `Phaser.Cameras.SceneCameraManager`**  The main camera that manages the rendering for Phaser
+
+*   **`this.anims`: `Phaser.Animations.AnimationManager`** This allows us to create and play the animation for the game.
+
+*   **`this.sound`: `Phaser.Sound.WebAudioSoundManager` or `Phaser.Sound.HTML5AudioSoundManager`** This allow us to add sound effects and musics
+
+**Central Object In Phaser**
+
+In the Phaser games lifecycle, Phaser.Scene is the central object because its the place the developer can manage and handle everything.
+
+
+
+File: ./index.html
+--------------------------------------------------
+Content of ./index.html:
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/style.css">
+<title>VirtOffice</title>
+ <style>
+		body {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		*,
+		*:before,
+		*:after {
+			box-sizing: inherit;
+		}
+
+		.video-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, 150px);
+			grid-auto-rows: 150px;
+			position: absolute;
+			top: 35px;
+			right: 10px;
+		}
+
+		.video-grid video {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+        .button-grid{
+            width:160px;
+            display:flex;
+            justify-content: space-evenly;
+            position: absolute;
+            top:10px;
+            right:10px
+
+
+
+        }
+</style>   
+</head>
+
+
+<body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <div class="video-grid"></div>
+    <div class="button-grid"></div>
+
+</body>
+</html>
+
+
+File: src/App.tsx
+--------------------------------------------------
+Content of src/App.tsx:
+import { useRef, useState } from 'react';
+import { IRefPhaserGame, PhaserGame } from './game/PhaserGame';
+import { MainMenu } from './game/scenes/MainMenu';
+
+function App()
+{
+    // The sprite can only be moved in the MainMenu Scene
+    const [canMoveSprite, setCanMoveSprite] = useState(true);
+
+    //  References to the PhaserGame component (game and scene are exposed)
+    const phaserRef = useRef<IRefPhaserGame | null>(null);
+    const [spritePosition, setSpritePosition] = useState({ x: 0, y: 0 });
+
+    const changeScene = () => {
+
+        if(phaserRef.current)
+        {     
+            const scene = phaserRef.current.scene as MainMenu;
+            
+            if (scene)
+            {
+                scene.changeScene();
+            }
+        }
+    }
+
+    const moveSprite = () => {
+
+        if(phaserRef.current)
+        {
+
+            const scene = phaserRef.current.scene as MainMenu;
+
+            if (scene && scene.scene.key === 'MainMenu')
+            {
+                // Get the update logo position
+                scene.moveLogo(({ x, y }) => {
+
+                    setSpritePosition({ x, y });
+
+                });
+            }
+        }
+
+    }
+
+    const addSprite = () => {
+
+        if (phaserRef.current)
+        {
+            const scene = phaserRef.current.scene;
+
+            if (scene)
+            {
+                // Add more stars
+                const x = Phaser.Math.Between(64, scene.scale.width - 64);
+                const y = Phaser.Math.Between(64, scene.scale.height - 64);
+    
+                //  `add.sprite` is a Phaser GameObjectFactory method and it returns a Sprite Game Object instance
+                const star = scene.add.sprite(x, y, 'star');
+    
+                //  ... which you can then act upon. Here we create a Phaser Tween to fade the star sprite in and out.
+                //  You could, of course, do this from within the Phaser Scene code, but this is just an example
+                //  showing that Phaser objects and systems can be acted upon from outside of Phaser itself.
+                scene.add.tween({
+                    targets: star,
+                    duration: 500 + Math.random() * 1000,
+                    alpha: 0,
+                    yoyo: true,
+                    repeat: -1
+                });
+            }
+        }
+    }
+
+    // Event emitted from the PhaserGame component
+    const currentScene = (scene: Phaser.Scene) => {
+
+        setCanMoveSprite(scene.scene.key !== 'MainMenu');
+        
+    }
+
+    return (
+        <div id="app">
+            <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
+            
+        </div>
+    )
+}
+
+export default App
+
+
+File: src/vite-env.d.ts
+--------------------------------------------------
+Content of src/vite-env.d.ts:
+/// <reference types="vite/client" />
+
+
+File: src/main.tsx
+--------------------------------------------------
+Content of src/main.tsx:
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.tsx';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+        <App />
+    </React.StrictMode>,
+)
+
+
+File: src/web/Webrtc.ts
+--------------------------------------------------
+Content of src/web/Webrtc.ts:
+import Peer from 'peerjs'
+import Network from '../services/Network'
+export default class WebRTC {
+    private myPeer: Peer
+    private peers = new Map<string, Peer.MediaConnection>()
+    private videoGrid = document.querySelector('.video-grid')
+    private buttonGrid = document.querySelector('.button-grid')
+    private myVideo = document.createElement('video')
+    private myStream?: MediaStream
+
+    constructor(userId: string, network: Network) {
+        // console.log(this.videoGrid)
+        // console.log(this.buttonGrid)
+        // console.log(this.myVideo)
+        this.myPeer = new Peer(userId)
+        this.myVideo.muted = true
+        navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        }).then((stream) => {
+            this.myStream = stream
+            this.addVideoStream(this.myVideo, this.myStream)
+            this.myPeer.on('call', (call) => {
+                call.answer(this.myStream)
+                const video = document.createElement('video')
+                call.on('stream', (userVideoStream) => {
+                    this.addVideoStream(video, userVideoStream)
+                })
+                call.on('close', () => {
+                    video.remove()
+                })
+                this.peers.set(call.peer, call)
+            })
+            this.setUpButtons()
+            network.readyToConnect()
+        })
+
+    }
+    addVideoStream(video: HTMLVideoElement, stream: MediaStream) {
+        video.srcObject = stream
+        video.addEventListener('loadedmetadata', () => {
+            video.play()
+        })
+        if (this.videoGrid) this.videoGrid.append(video)
+    }
+    deleteVideoStream(userId: string) {
+        if (this.peers.has(userId)) {
+            const peer = this.peers.get(userId)
+            if (!peer) return
+            peer.close()
+            this.peers.delete(userId)
+        }
+    }
+    connectToUser(userId: string) {
+        if (this.peers.has(userId)) return;
+        if (!this.myStream) return
+        const call = this.myPeer.call(userId, this.myStream)
+        const video = document.createElement('video')
+        call.on('stream', (userVideoStream) => {
+            this.addVideoStream(video, userVideoStream)
+        })
+        call.on('close', () => {
+            video.remove()
+        })
+
+        this.peers.set(userId, call)
+    }
+
+    disconnectFromUser(userId: string) {
+        if (!this.peers.has(userId)) return;
+
+        const call = this.peers.get(userId);
+        if (call) {
+            call.close();
+            this.peers.delete(userId);
+        }
+    }
+    setUpButtons() {
+        const audioButton = document.createElement('button')
+        audioButton.innerText = 'Mute'
+        audioButton.addEventListener('click', () => {
+            if (this.myStream) {
+                const audioTrack = this.myStream.getAudioTracks()[0]
+                if (audioTrack.enabled) {
+                    audioTrack.enabled = false
+                    audioButton.innerText = "Unmute"
+                } else {
+                    audioTrack.enabled = true
+                    audioButton.innerText = "Mute"
+                }
+            }
+        })
+        const videoButton = document.createElement('button')
+        videoButton.innerText = 'Video off'
+        videoButton.addEventListener('click', () => {
+            if (this.myStream) {
+                const videoTrack = this.myStream.getVideoTracks()[0]
+                if (videoTrack.enabled) {
+                    videoTrack.enabled = false
+                    videoButton.innerText = 'Video on'
+                } else {
+                    videoTrack.enabled = true
+                    videoButton.innerText = "Video off"
+                }
+            }
+        })
+        this.buttonGrid?.append(audioButton)
+        this.buttonGrid?.append(videoButton)
+    }
+}
+
+
+File: src/game/main.ts
+--------------------------------------------------
+Content of src/game/main.ts:
+// import { Boot } from './scenes/Boot';
+// import { GameOver } from './scenes/GameOver';
+import { Game as MainGame } from './Game';
+// import { MainMenu } from './scenes/MainMenu';
+import { AUTO, Game } from 'phaser';
+import  Preloader  from './scenes/Preloader';
+
+//  Find out more information about the Game Config at:
+//  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
+const config: Phaser.Types.Core.GameConfig = {
+    type: AUTO,
+    width: 1024,
+    height: 768,
+    parent: 'game-container',
+    backgroundColor: '#028af8',
+    scene: [
+        // Boot,
+        Preloader,
+        // MainMenu,
+        MainGame,
+        // GameOver
+    ],
+    physics: {
+        default: 'arcade',
+        arcade: {
+          gravity: { x:0,y: 0 },
+          // debug: true,
+        },
+      },
+};
+
+const StartGame = (parent: string) => {
+
+    return new Game({ ...config, parent });
+
+}
+
+export default StartGame;
+
+
+File: src/game/Game.ts
+--------------------------------------------------
+Content of src/game/Game.ts:
+import Phaser from 'phaser';
+import { createCharacterAnims } from './animation/Animation';
+import Network from '../services/Network.ts';
+import { IPlayer } from '../types/IOfficeState.ts';
+import './character/MyPlayer.ts'
+import './character/OtherPlayer.ts'
+import MyPlayer from './character/MyPlayer.ts';
+import OtherPlayer from './character/OtherPlayer.ts';
+const PROXIMITY_THRESHOLD = 200;
+
+
+export class Game extends Phaser.Scene {
+    private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+    private myPlayer!: MyPlayer
+    private network?:Network
+    private otherPlayers!:Phaser.Physics.Arcade.Group
+    private otherPlayerMap = new Map<string,OtherPlayer>()
+
+    constructor() {
+        super('Game');
+    }
+    init (){
+        this.network = new Network()
+    }
+    preload(){
+
+    this.cursors = this.input.keyboard.createCursorKeys()
+    }
+
+    // preload() {
+    //
+    //     // Load the tilemap and image assets
+    //     this.load.tilemapTiledJSON('map', 'assets/json/final_map.json');
+    //     this.load.image('floor', 'assets/tiles/floor.png');
+    //     this.load.image('forest', 'assets/tiles/forest.png');
+    //     this.load.image('office', 'assets/tiles/office.png');
+    //     this.load.image('objects', 'assets/tiles/objects.png');
+    //     this.load.image('scifi', 'assets/tiles/scifi.png');
+    //     this.load.atlas('player', 'assets/tiles/chr.png', 'assets/json/char.json');
+    //     this.cursors = this.input.keyboard.createCursorKeys();
+    // }
+    //
+    async create() {
+        if(!this.network){
+            throw new Error('server instance missing')
+        }
+        await this.network.join()
+        this.scene.stop('preloader')
+        createCharacterAnims(this.anims)
+        // console.log(this.anims)
+        const map = this.make.tilemap({ key: 'map' });
+
+
+        // Add the tilesets and create layers
+        const tileset1 = map.addTilesetImage('floor', 'floor');
+        const tileset2 = map.addTilesetImage('forest', 'forest');
+        const tileset3 = map.addTilesetImage('office', 'office');
+        const tileset4 = map.addTilesetImage('objects', 'objects');
+        const tileset5 = map.addTilesetImage('scifi', 'scifi');
+
+        const floorLayer = map.createLayer('floor', [tileset1, tileset2, tileset3], 0, 0);
+        const wall_projection_layer = map.createLayer('wall_projection', [tileset1, tileset3], 0, 0);
+        const wallLayer = map.createLayer('walls', [tileset1, tileset3, tileset4], 0, 0);
+        const objectLayer = map.createLayer('objects', [tileset1, tileset2, tileset3, tileset4, tileset5], 0, 0);
+        const superposeLayer = map.createLayer('superpose', [tileset4, tileset5], 0, 0);
+
+        // Set camera and physics bounds based on the map size
+        // this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+        this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+
+        // Optional: Set a background color for debugging
+        this.cameras.main.backgroundColor.setTo(0, 0, 0);
+        
+        this.myPlayer = this.add.myPlayer(800,800,'player',this.network.mySessionId)
+        this.otherPlayers = this.physics.add.group({ classType: OtherPlayer })
+        this.cameras.main.zoom = 1.5;
+        this.cameras.main.startFollow(this.myPlayer);
+
+        // Create colliders for objects that can collide
+        const collideLayer = map.getObjectLayer('collidelayer');
+        collideLayer.objects.forEach((object) => {
+            const collidesProperty = object.properties.find((prop) => prop.name === 'collides');
+            if (collidesProperty && collidesProperty.value) {
+                const collider = this.physics.add.existing(
+                    new Phaser.GameObjects.Rectangle(this, object.x + object.width / 2, object.y + object.height / 2, object.width, object.height)
+                );
+                collider.setOrigin(0.5);
+                if (collider.body){
+
+                    collider.body.moves = false;
+                }
+                this.physics.add.collider(this.myPlayer, collider);
+            }
+        });
+        // if (process.env.NODE_ENV !== 'production') {
+        //     if (this.physics.world.debugGraphic) {
+        //         this.physics.world.debugGraphic.clear();
+        //     }
+        //     this.physics.world.createDebugGraphic();
+        // }
+        // const debugGraphics = this.add.graphics().setAlpha(0.75);
+
+        // Set camera and player physics properties
+        this.myPlayer.setCollideWorldBounds(true);
+        this.network.onPlayerJoined(this.handlePlayerJoined, this)
+        this.network.onPlayerLeft(this.handlePlayerLeft, this)
+        this.network.onPlayerUpdated(this.handlePlayerUpdated, this)
+    }
+
+    private handlePlayerJoined(newPlayer: IPlayer, id: string) {
+        const otherPlayer = this.add.otherPlayer(newPlayer.x, newPlayer.y, 'player', id)
+        // this.otherPlayers.get(newPlayer.x, newPlayer.y, 'player') as OtherPlayer
+        this.otherPlayers.add(otherPlayer)
+        this.otherPlayerMap.set(id, otherPlayer)
+    }
+    
+    private handlePlayerLeft(id: string) {
+        if (this.otherPlayerMap.has(id)) {
+            const otherPlayer = this.otherPlayerMap.get(id)
+            if (!otherPlayer) return
+            this.otherPlayers.remove(otherPlayer, true, true)
+            this.otherPlayerMap.delete(id)
+          }
+        }
+        private handlePlayerUpdated(field: string, value: number | string, id: string) {
+            const otherPlayer = this.otherPlayerMap.get(id)
+            if (!otherPlayer) return
+            otherPlayer.updateOtherPlayer(field, value)
+        }
+
+    update() {
+        if (!this.myPlayer || !this.network) return;
+
+        this.myPlayer.update(this.cursors, this.network);
+
+        this.otherPlayerMap.forEach((otherPlayer, id) => {
+            const distance = Phaser.Math.Distance.Between(
+                this.myPlayer.x,
+                this.myPlayer.y,
+                otherPlayer.x,
+                otherPlayer.y
+            );
+
+            if (distance <= PROXIMITY_THRESHOLD) {
+                this.network?.webRTC?.connectToUser(id);
+            } else {
+                this.network?.webRTC?.disconnectFromUser(id);
+            }
+        });
+    }
+}
+
+
+File: src/game/PhaserGame.tsx
+--------------------------------------------------
+Content of src/game/PhaserGame.tsx:
+import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
+import StartGame from './main';
+import { EventBus } from './EventBus';
+
+export interface IRefPhaserGame
+{
+    game: Phaser.Game | null;
+    scene: Phaser.Scene | null;
+}
+
+interface IProps
+{
+    currentActiveScene?: (scene_instance: Phaser.Scene) => void
+}
+
+export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame({ currentActiveScene }, ref)
+{
+    const game = useRef<Phaser.Game | null>(null!);
+
+    useLayoutEffect(() =>
+    {
+        if (game.current === null)
+        {
+
+            game.current = StartGame("game-container");
+
+            if (typeof ref === 'function')
+            {
+                ref({ game: game.current, scene: null });
+            } else if (ref)
+            {
+                ref.current = { game: game.current, scene: null };
+            }
+
+        }
+
+        return () =>
+        {
+            if (game.current)
+            {
+                game.current.destroy(true);
+                if (game.current !== null)
+                {
+                    game.current = null;
+                }
+            }
+        }
+    }, [ref]);
+
+    useEffect(() =>
+    {
+        EventBus.on('current-scene-ready', (scene_instance: Phaser.Scene) =>
+        {
+            if (currentActiveScene && typeof currentActiveScene === 'function')
+            {
+
+                currentActiveScene(scene_instance);
+
+            }
+
+            if (typeof ref === 'function')
+            {
+                ref({ game: game.current, scene: scene_instance });
+            } else if (ref)
+            {
+                ref.current = { game: game.current, scene: scene_instance };
+            }
+            
+        });
+        return () =>
+        {
+            EventBus.removeListener('current-scene-ready');
+        }
+    }, [currentActiveScene, ref]);
+
+    return (
+        <div id="game-container"></div>
+    );
+
+});
+
+
+File: src/game/EventBus.ts
+--------------------------------------------------
+Content of src/game/EventBus.ts:
+import { Events } from 'phaser';
+
+// Used to emit events between React components and Phaser scenes
+// https://newdocs.phaser.io/docs/3.70.0/Phaser.Events.EventEmitter
+export const EventBus = new Events.EventEmitter();
+
+File: src/game/animation/Animation.ts
+--------------------------------------------------
+Content of src/game/animation/Animation.ts:
+import Phaser from 'phaser'
+
+export const createCharacterAnims = (anims: Phaser.Animations.AnimationManager) => {
+  const Frate = 10;
+        anims.create({
+            key: 'idle_left',
+            frames: anims.generateFrameNames('player', { start: 1, end: 8, prefix: 'idle_left_', suffix: '' }),
+            frameRate: Frate,
+            repeat: -1,
+        });
+        anims.create({
+            key: 'idle_right',
+            frames: anims.generateFrameNames('player', { start: 1, end: 8, prefix: 'idle_right_', suffix: '' }),
+            frameRate: Frate,
+            repeat: -1,
+        });
+        anims.create({
+            key: 'idle_front',
+            frames: anims.generateFrameNames('player', { start: 1, end: 8, prefix: 'idle_front_', suffix: '' }),
+            frameRate: Frate,
+            repeat: -1,
+        });
+        anims.create({
+            key: 'idle_back',
+            frames: anims.generateFrameNames('player', { start: 1, end: 8, prefix: 'idle_back_', suffix: '' }),
+            frameRate: Frate,
+            repeat: -1,
+        });
+        anims.create({
+            key: 'walk_left',
+            frames: anims.generateFrameNames('player', { start: 8, end: 1, prefix: 'walk_left_', suffix: '' }),
+            frameRate: Frate,
+            repeat: -1,
+        });
+        anims.create({
+            key: 'walk_back',
+            frames: anims.generateFrameNames('player', { start: 1, end: 8, prefix: 'walk_back_', suffix: '' }),
+            frameRate: Frate,
+            repeat: -1,
+        });
+        anims.create({
+            key: 'walk_right',
+            frames: anims.generateFrameNames('player', { start: 8, end: 1, prefix: 'walk_right_', suffix: '' }),
+            frameRate: Frate,
+            repeat: -1,
+        });
+        anims.create({
+            key: 'walk_front',
+            frames: anims.generateFrameNames('player', { start: 1, end: 8, prefix: 'walk_front_', suffix: '' }),
+            frameRate: Frate,
+            repeat: -1,
+        });
+}
+
+File: src/game/scenes/Preloader.ts
+--------------------------------------------------
+Content of src/game/scenes/Preloader.ts:
+import Phaser from 'phaser'
+
+export default class Preloader extends Phaser.Scene {
+  private counter = 0
+
+  constructor() {
+    super('preloader')
+  }
+
+  preload() {
+        // Load the tilemap and image assets
+        this.load.tilemapTiledJSON('map', 'assets/json/final_map.json');
+        this.load.image('floor', 'assets/tiles/floor.png');
+        this.load.image('forest', 'assets/tiles/forest.png');
+        this.load.image('office', 'assets/tiles/office.png');
+        this.load.image('objects', 'assets/tiles/objects.png');
+        this.load.image('scifi', 'assets/tiles/scifi.png');
+        this.load.atlas('player', 'assets/tiles/chr.png', 'assets/json/char.json');
+  }
+
+  async create() {
+    // create loading texts
+    const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2
+    const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2
+    this.add
+      .text(screenCenterX, screenCenterY - 100, 'Virtoffice')
+      .setOrigin(0.5)
+      .setFontSize(50)
+      .setFontStyle('bold')
+      .setColor('#000000')
+    const loadingText = this.add
+      .text(screenCenterX, screenCenterY - 30, 'Loading...')
+      .setOrigin(0.5)
+      .setFontSize(30)
+      .setColor('#000000')
+    this.add
+      .text(
+        screenCenterX,
+        screenCenterY + 40,
+        'Servers take upto 1 minute to start'
+      )
+      .setOrigin(0.5)
+      .setFontSize(18)
+      .setColor('#000000')
+    this.add
+      .text(
+        screenCenterX,
+        screenCenterY + 60,
+        "(It is free instance please wait)"
+      )
+      .setOrigin(0.5)
+      .setFontSize(18)
+      .setColor('#000000')
+
+    this.time.addEvent({
+      delay: 750,
+      callback: () => {
+        switch (this.counter % 3) {
+          case 0:
+            loadingText.setText('loading.')
+            break
+
+          case 1:
+            loadingText.setText('loading..')
+            break
+
+          case 2:
+            loadingText.setText('loading...')
+            break
+        }
+        this.counter += 1
+      },
+      loop: true,
+    })
+
+    this.scene.run('Game')
+  }
+}
+
+
+
+File: src/game/scenes/MainMenu.ts
+--------------------------------------------------
+Content of src/game/scenes/MainMenu.ts:
+import { GameObjects, Scene } from 'phaser';
+
+import { EventBus } from '../EventBus';
+
+export class MainMenu extends Scene
+{
+    background: GameObjects.Image;
+    logo: GameObjects.Image;
+    title: GameObjects.Text;
+    logoTween: Phaser.Tweens.Tween | null;
+
+    constructor ()
+    {
+        super('MainMenu');
+    }
+
+    create ()
+    {
+        this.background = this.add.image(512, 384, 'background');
+
+        this.logo = this.add.image(512, 300, 'logo').setDepth(100);
+
+        this.title = this.add.text(512, 460, 'Main Menu', {
+            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
+            stroke: '#000000', strokeThickness: 8,
+            align: 'center'
+        }).setOrigin(0.5).setDepth(100);
+
+        EventBus.emit('current-scene-ready', this);
+    }
+    
+    changeScene ()
+    {
+        if (this.logoTween)
+        {
+            this.logoTween.stop();
+            this.logoTween = null;
+        }
+
+        this.scene.start('Game');
+    }
+
+    moveLogo (Callback: ({ x, y }: { x: number, y: number }) => void)
+    {
+        if (this.logoTween)
+        {
+            if (this.logoTween.isPlaying())
+            {
+                this.logoTween.pause();
+            }
+            else
+            {
+                this.logoTween.play();
+            }
+        } 
+        else
+        {
+            this.logoTween = this.tweens.add({
+                targets: this.logo,
+                x: { value: 750, duration: 3000, ease: 'Back.easeInOut' },
+                y: { value: 80, duration: 1500, ease: 'Sine.easeOut' },
+                yoyo: true,
+                repeat: -1,
+                onUpdate: () => {
+                    if (Callback)
+                    {
+                        Callback({
+                            x: Math.floor(this.logo.x),
+                            y: Math.floor(this.logo.y)
+                        });
+                    }
+                }
+            });
+        }
+    }
+}
+
+File: src/game/character/Player.ts
+--------------------------------------------------
+Content of src/game/character/Player.ts:
+import Phaser from 'phaser'
+
+declare global {
+  namespace Phaser.GameObjects {
+    interface GameObjectFactory {
+      player(x: number, y: number, texture: string,id:string, frame?: string | number): Player
+    }
+  }
+}
+
+export default class Player extends Phaser.Physics.Arcade.Sprite {
+  playerId: string
+  constructor(scene: Phaser.Scene, x: number, y: number,id:string, texture: string, frame?: string | number) {
+    super(scene, x, y, texture, frame)
+    this.playerId = id
+
+  }
+}
+
+  
+
+File: src/game/character/OtherPlayer.ts
+--------------------------------------------------
+Content of src/game/character/OtherPlayer.ts:
+import Phaser from 'phaser'
+import Player from './Player'
+
+export default class OtherPlayer extends Player {
+  private targetPosition: [number, number]
+  private lastUpdateTimestamp?: number
+
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    texture: string,
+    id: string,
+    frame?: string | number
+  ) {
+    super(scene, x, y, texture, id, frame)
+    this.targetPosition = [x, y]
+  }
+
+  updateOtherPlayer(field: string, value: number | string) {
+    switch (field) {
+      case 'x':
+        if (typeof value === 'number') {
+          this.targetPosition[0] = value
+        }
+        break
+
+      case 'y':
+        if (typeof value === 'number') {
+          this.targetPosition[1] = value
+        }
+        break
+
+      case 'anim':
+        if (typeof value === 'string') {
+          this.anims.play(value, true)
+        }
+        break
+    }
+  }
+
+  /** preUpdate is called every frame for every game object. */
+  preUpdate(t: number, dt: number) {
+    super.preUpdate(t, dt)
+
+    // if Phaser has not updated the canvas (when the game tab is not active) for more than 1 sec
+    // directly snap player to their current locations
+    if (this.lastUpdateTimestamp && t - this.lastUpdateTimestamp > 1000) {
+      this.lastUpdateTimestamp = t
+      this.x = this.targetPosition[0]
+      this.y = this.targetPosition[1]
+      return
+    }
+
+    this.lastUpdateTimestamp = t
+    this.setDepth(this.y) // change player.depth based on player.y
+    
+
+    const speed = 200 // speed is in unit of pixels per second
+    const delta = (speed / 1000) * dt // minimum distance that a player can move in a frame (dt is in unit of ms)
+    let dx = this.targetPosition[0] - this.x
+    let dy = this.targetPosition[1] - this.y
+
+    // if the player is close enough to the target position, directly snap the player to that position
+    if (Math.abs(dx) < delta) {
+      this.x = this.targetPosition[0]
+      dx = 0
+    }
+    if (Math.abs(dy) < delta) {
+      this.y = this.targetPosition[1]
+      dy = 0
+    }
+
+    // if the player is still far from target position, impose a constant velocity towards it
+    let vx = 0
+    let vy = 0
+    if (dx > 0) vx += speed
+    else if (dx < 0) vx -= speed
+    if (dy > 0) vy += speed
+    else if (dy < 0) vy -= speed
+
+    this.setVelocity(vx, vy)
+    this.body?.velocity.setLength(speed)
+  }
+}
+
+declare global {
+  namespace Phaser.GameObjects {
+    interface GameObjectFactory {
+      otherPlayer(
+        x: number,
+        y: number,
+        texture: string,
+        id: string,
+        frame?: string | number
+      ): OtherPlayer
+    }
+  }
+}
+
+Phaser.GameObjects.GameObjectFactory.register(
+  'otherPlayer',
+  function (
+    this: Phaser.GameObjects.GameObjectFactory,
+    x: number,
+    y: number,
+    texture: string,
+    id: string,
+    frame?: string | number
+  ) {
+    const sprite = new OtherPlayer(this.scene, x, y, texture, id, frame)
+
+    this.displayList.add(sprite)
+    this.updateList.add(sprite)
+    
+
+    this.scene.physics.world.enableBody(sprite, Phaser.Physics.Arcade.DYNAMIC_BODY)
+    sprite.setScale(2)
+    sprite.setOffset(10,10)
+
+    return sprite
+  }
+)
+
+
+File: src/game/character/MyPlayer.ts
+--------------------------------------------------
+Content of src/game/character/MyPlayer.ts:
+import Phaser from 'phaser'
+import Network from '../../services/Network'
+import Player from './Player'
+
+declare global {
+  namespace Phaser.GameObjects {
+    interface GameObjectFactory {
+     myPlayer(x: number, y: number, texture: string,id:string, frame?: string | number): MyPlayer
+    }
+  }
+}
+
+export default class MyPlayer extends Player{
+  constructor(scene: Phaser.Scene, x: number, y: number,id:string, texture: string, frame?: string | number) {
+    super(scene, x, y, texture,id, frame)
+    this.playerId = id
+
+    this.anims.play('idle_front', true)
+  }
+
+  update(cursors: Phaser.Types.Input.Keyboard.CursorKeys,network:Network) {
+    if (!cursors) {
+      return
+    }
+
+    const speed = 200
+    const velocity = { x: 0, y: 0 }
+    let animation = 'idle_front_1' // Default idle animation
+
+    // Determine movement and animation
+    if (cursors.left?.isDown) {
+      velocity.x = -speed
+      animation = 'walk_left'
+    } else if (cursors.right?.isDown) {
+      velocity.x = speed
+      animation = 'walk_right'
+    } else if (cursors.up?.isDown) {
+      velocity.y = -speed
+      animation = 'walk_back'
+    } else if (cursors.down?.isDown) {
+      velocity.y = speed
+      animation = 'walk_front'
+    }
+
+    // Apply velocity and animation
+    this.setVelocity(velocity.x, velocity.y)
+
+    if (velocity.x !== 0 || velocity.y !== 0) {
+      this.play(animation, true) // Play walking animation
+      network.updatePlayer(this.x, this.y, this.anims.currentAnim.key)
+    } else {
+      // Play idle animation based on the last played direction
+      const currentAnim = this.anims.currentAnim?.key || ''
+      const idleAnimation = currentAnim.replace('walk', 'idle') // Derive idle animation
+      this.play(idleAnimation, true)
+      network.updatePlayer(this.x, this.y, this.anims.currentAnim.key)
+    }
+  }
+}
+
+Phaser.GameObjects.GameObjectFactory.register(
+    'myPlayer',
+    function (
+      this: Phaser.GameObjects.GameObjectFactory,
+      x: number,
+      y: number,
+      id:string,
+      texture: string,
+      frame?: string | number
+    ) {
+      var sprite = new MyPlayer(this.scene, x, y, texture,id, frame)
+  
+      this.displayList.add(sprite)
+      this.updateList.add(sprite)
+  
+      this.scene.physics.world.enableBody(sprite, Phaser.Physics.Arcade.DYNAMIC_BODY)
+    //   console.log(sprite.width,sprite.height)
+    //   console.log(sprite.texture,sprite.frame)
+  
+      sprite.setScale(2)
+      sprite.setSize(10,10)
+  
+      return sprite
+    }
+)
+
+File: src/services/Network.ts
+--------------------------------------------------
+Content of src/services/Network.ts:
+import { Client,Room} from "colyseus.js";
+import Phaser from 'phaser'
+import { IOfficeState, IPlayer } from '../types/IOfficeState'
+import { Message } from '../types/Messages'
+import WebRTC from '../web/Webrtc'
+enum Event {
+  PLAYER_JOINED='player_joined',
+  PLAYER_UPDATED='player_updated',
+  PLAYER_LEFT='player_left'
+}
+
+export default class Network {
+  private client: Client
+  private room?: Room<IOfficeState>
+  private events= new Phaser.Events.EventEmitter()
+  webRTC?:WebRTC
+
+
+  mySessionId!:string
+
+  
+
+  constructor() {
+    // const endpoint = 'ws://localhost:2567'
+    const protocol = window.location.protocol.replace('http', 'ws')
+    // const endpoint = 'wss://render-server-h04y.onrender.com'
+    const endpoint =
+      process.env.NODE_ENV === 'production'
+        ? 'wss://render-server-h04y.onrender.com'
+        : `${protocol}//${window.location.hostname}:2567`
+    this.client = new Client(endpoint)
+  }
+
+  async join() {
+    this.room = await this.client.joinOrCreate('myoffice')
+    this.mySessionId = this.room.sessionId
+    this.webRTC= new WebRTC(this.mySessionId,this)
+
+    // this.room.state.players.onChange = (player, key) => {
+    //   console.log(player, 'have changes at', key)
+    // }
+    // console.log(this.room.state)
+    this.room.state.players.onAdd((player: IPlayer, key: string) => {
+      if (key === this.mySessionId) return;
+    
+      // console.log(`Player joined: ${key}`);
+      this.events.emit(Event.PLAYER_JOINED, player, key);
+      if (this.webRTC) this.webRTC.connectToUser(key)
+      const propertiesToListen = ['x', 'y', 'anim'];
+      propertiesToListen.forEach((property) => {
+        player.listen(property, (value, previousValue) => {
+          this.events.emit(Event.PLAYER_UPDATED, property, value, key);
+        });
+      });
+    });
+
+    
+
+    this.room.state.players.onRemove ( (player: IPlayer, key: string) => {
+      // console.log(`player removed ${player}`)
+      this.events.emit(Event.PLAYER_LEFT,key)
+      this.webRTC?.deleteVideoStream(key)
+    })
+    this.room.onMessage(Message.READY_TO_CONNECT,(clientId)=>{
+      this.webRTC?.connectToUser(clientId)
+    })
+  }
+
+  onPlayerJoined(callback: (Player: IPlayer, key: string) => void, context?: any) {
+    this.events.on(Event.PLAYER_JOINED,callback, context)
+  }
+  onPlayerUpdated(
+    callback: (field: string, value: number | string, key: string) => void,
+    context?: any
+  ) {
+    // console.log('inside on player updated callback')
+    this.events.on(Event.PLAYER_UPDATED, callback, context)
+  }
+
+  onPlayerLeft(callback: (key: string) => void, context?: any) {
+    // console.log('inside on player left callbacak')
+    this.events.on(Event.PLAYER_LEFT,callback, context)
+  }
+  updatePlayer(currentX: number, currentY: number, currentAnim: string) {
+    if (!this.room) return
+    this.room.send(Message.UPDATE_PLAYER, { x: currentX, y: currentY, anim: currentAnim })
+  }
+  readyToConnect(){
+    this.room?.send(Message.READY_TO_CONNECT)
+  }
+}
+
+
+File: src/types/Messages.ts
+--------------------------------------------------
+Content of src/types/Messages.ts:
+export enum Message {
+    UPDATE_PLAYER,
+    READY_TO_CONNECT
+  }
+
+File: src/types/IOfficeState.ts
+--------------------------------------------------
+Content of src/types/IOfficeState.ts:
+import { Schema, MapSchema } from '@colyseus/schema'
+
+export interface IPlayer extends Schema {
+  x: number
+  y: number
+  anim: string
+}
+
+export interface IOfficeState extends Schema {
+  players: MapSchema<IPlayer>
+}
+
+
+File: vite/config.dev.mjs
+--------------------------------------------------
+Content of vite/config.dev.mjs:
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+    base: './',
+    plugins: [
+        react(),
+    ],
+    server: {
+        port: 8080
+    }
+})
+
+
+File: vite/config.prod.mjs
+--------------------------------------------------
+Content of vite/config.prod.mjs:
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+const phasermsg = () => {
+    return {
+        name: 'phasermsg',
+        buildStart() {
+            process.stdout.write(`Building for production...\n`);
+        },
+        buildEnd() {
+            const line = "---------------------------------------------------------";
+            const msg = `❤️❤️❤️ Tell us about your game! - games@phaser.io ❤️❤️❤️`;
+            process.stdout.write(`${line}\n${msg}\n${line}\n`);
+
+            process.stdout.write(`✨ Done ✨\n`);
+        }
+    }
+}
+
+export default defineConfig({
+    base: './',
+    plugins: [
+        react(),
+        phasermsg()
+    ],
+    logLevel: 'warning',
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    phaser: ['phaser']
+                }
+            }
+        },
+        minify: 'terser',
+        terserOptions: {
+            compress: {
+                passes: 2
+            },
+            mangle: true,
+            format: {
+                comments: false
+            }
+        }
+    }
+});
+
+
